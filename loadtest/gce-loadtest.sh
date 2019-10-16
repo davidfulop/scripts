@@ -6,7 +6,6 @@ INSTANCE_NAME=load-testing-instance
 GCP_PROJECT=$1
 ARTILLERY_YML=$2
 REMOTE_YML_PATH="/tmp/$ARTILLERY_YML"
-REMOTE_RESULT_PATH="/tmp/"$ARTILLERY_YML"_results_"$(date +%s)
 
 echo "Creating instance: $INSTANCE_NAME"
 gcloud compute instances create $INSTANCE_NAME \
@@ -22,6 +21,6 @@ gcloud compute ssh --project $GCP_PROJECT --zone europe-west1-b $INSTANCE_NAME -
     && sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y \
     && sudo apt install -y nodejs npm \
     && npm install --ignore-scirpts artillery \
-    && echo 'Starting load test. Results:' $REMOTE_RESULT_PATH \
+    && echo 'Starting load test... \
     && node ~/node_modules/artillery/bin/artillery run $REMOTE_YML_PATH \
     && wait"
