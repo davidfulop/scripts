@@ -21,7 +21,7 @@ gcloud compute scp --zone europe-west1-b $(pwd)"/"$ARTILLERY_YML $INSTANCE_NAME:
 echo "Connecting to instance..."
 gcloud compute ssh --project $GCP_PROJECT --zone europe-west1-b $INSTANCE_NAME -- \
     "echo 'Installing load testing tools...' \
-    && sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y \
+    && sudo apt update && sudo apt upgrade -y \
     && sudo apt install -y nodejs npm \
     && npm install --ignore-scirpts artillery \
     && echo 'Starting load test...' \
