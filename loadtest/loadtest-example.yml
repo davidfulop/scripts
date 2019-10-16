@@ -1,0 +1,9 @@
+config:
+  target: 'http://www.nsa.gov'
+  phases:
+    - duration: 30
+      arrivalRate: 10
+scenarios:
+  - flow:
+    - get:
+        url: "/about/faqs/"
