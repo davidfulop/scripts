@@ -6,11 +6,12 @@ INSTANCE_NAME=load-testing-instance
 GCP_PROJECT=$1
 ARTILLERY_YML=$2
 DATE=$(date +%s)
+LOCAL_RESULT_DIR=$(pwd)"/results"
 REMOTE_YML_PATH="/tmp/$ARTILLERY_YML"
-RESULT_FILE=$ARTILLERY_YML"_results_"$DATE".json"
-REPORT_FILE=$ARTILLERY_YML"_results_"$DATE".html"
-REMOTE_RESULT_PATH="/tmp/"$RESULT_FILE
-REMOTE_REPORT_PATH="/tmp/"$RESULT_FILE".html"
+RESULT_PATH=$LOCAL_RESULT_DIR"/"$ARTILLERY_YML"_results_"$DATE".json"
+REPORT_PATH=$LOCAL_RESULT_DIR"/"$ARTILLERY_YML"_results_"$DATE".html"
+REMOTE_RESULT_PATH="/tmp/"$ARTILLERY_YML"_results_"$DATE".json"
+REMOTE_REPORT_PATH="/tmp/"$ARTILLERY_YML"_results_"$DATE".html"
 
 echo "Creating instance: $INSTANCE_NAME"
 gcloud compute instances create $INSTANCE_NAME \
@@ -32,5 +33,9 @@ gcloud compute ssh --project $GCP_PROJECT --zone europe-west1-b $INSTANCE_NAME -
     && echo 'Creating report...' \
     && node ~/node_modules/artillery/bin/artillery report $REMOTE_RESULT_PATH -o $REMOTE_REPORT_PATH"
 echo "Copying result and report to local machine..."
-gcloud compute scp --zone europe-west1-b $INSTANCE_NAME:$REMOTE_RESULT_PATH $(pwd)"/"$RESULT_FILE
-gcloud compute scp --zone europe-west1-b $INSTANCE_NAME:$REMOTE_REPORT_PATH $(pwd)"/"$REPORT_FILE
+if [ ! -d $LOCAL_RESULT_DIR ]; then
+  mkdir $LOCAL_RESULT_DIR
+fi
+
+gcloud compute scp --zone europe-west1-b $INSTANCE_NAME:$REMOTE_RESULT_PATH $RESULT_PATH
+gcloud compute scp --zone europe-west1-b $INSTANCE_NAME:$REMOTE_REPORT_PATH $REPORT_PATH
