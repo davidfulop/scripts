@@ -17,7 +17,8 @@ echo "Creating instance: $INSTANCE_NAME"
 gcloud compute instances create $INSTANCE_NAME \
     --image-family ubuntu-1904 \
     --image-project ubuntu-os-cloud \
-    --machine-type n1-highcpu-8
+    --machine-type n1-highcpu-8 \
+     --preemptible
 
 echo "Copying" $(pwd)"/"$ARTILLERY_YML "to" $REMOTE_YML_PATH
 gcloud compute scp --zone europe-west1-b $(pwd)"/"$ARTILLERY_YML $INSTANCE_NAME:$REMOTE_YML_PATH
