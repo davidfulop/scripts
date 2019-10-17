@@ -3,8 +3,9 @@ set -e
 set -u
 
 INSTANCE_NAME=load-testing-instance
-GCP_PROJECT=$1
-ARTILLERY_YML=$2
+GCP_PROJECT=$(gcloud config get-value project)
+GCP_ZONE=$(gcloud config get-value compute/zone)
+ARTILLERY_YML=$1
 DATE=$(date +%s)
 LOCAL_RESULT_DIR="./results"
 REMOTE_YML_PATH="/tmp/$ARTILLERY_YML"
@@ -22,10 +23,10 @@ gcloud compute instances create $INSTANCE_NAME \
     --preemptible
 
 echo "Copying" $ARTILLERY_YML "to" $REMOTE_YML_PATH
-gcloud compute scp --zone europe-west1-b $ARTILLERY_YML $INSTANCE_NAME:$REMOTE_YML_PATH
+gcloud compute scp --zone $GCP_ZONE $ARTILLERY_YML $INSTANCE_NAME:$REMOTE_YML_PATH
 
 echo "Connecting to instance..."
-gcloud compute ssh --project $GCP_PROJECT --zone europe-west1-b $INSTANCE_NAME -- \
+gcloud compute ssh --project $GCP_PROJECT --zone $GCP_ZONE $INSTANCE_NAME -- \
     "echo 'Installing load testing tools...' \
     && sudo apt update && sudo apt upgrade -y \
     && sudo apt install -y nodejs npm \
@@ -39,9 +40,9 @@ if [ ! -d $LOCAL_RESULT_DIR ]; then
   mkdir $LOCAL_RESULT_DIR
 fi
 
-gcloud compute scp --zone europe-west1-b $INSTANCE_NAME:$REMOTE_RESULT_PATH $RESULT_PATH
-gcloud compute scp --zone europe-west1-b $INSTANCE_NAME:$REMOTE_REPORT_PATH $REPORT_PATH
+gcloud compute scp --zone $GCP_ZONE $INSTANCE_NAME:$REMOTE_RESULT_PATH $RESULT_PATH
+gcloud compute scp --zone $GCP_ZONE $INSTANCE_NAME:$REMOTE_REPORT_PATH $REPORT_PATH
 
 echo "Deleting instance: $INSTANCE_NAME"
-gcloud compute instances delete --quiet --zone europe-west1-b $INSTANCE_NAME
+gcloud compute instances delete --quiet --zone $GCP_ZONE $INSTANCE_NAME
 echo "Instance deleted, have a good day!"
