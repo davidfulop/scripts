@@ -39,3 +39,7 @@ fi
 
 gcloud compute scp --zone europe-west1-b $INSTANCE_NAME:$REMOTE_RESULT_PATH $RESULT_PATH
 gcloud compute scp --zone europe-west1-b $INSTANCE_NAME:$REMOTE_REPORT_PATH $REPORT_PATH
+
+echo "Deleting instance: $INSTANCE_NAME"
+gcloud compute instances delete --quiet --zone europe-west1-b $INSTANCE_NAME
+echo "Instance deleted, have a good day!"
