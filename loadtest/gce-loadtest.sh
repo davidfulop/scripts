@@ -15,12 +15,17 @@ REPORT_PATH=$LOCAL_RESULT_DIR"/"$RESULT_FILE_NAME".html"
 REMOTE_RESULT_PATH="/tmp/"$RESULT_FILE_NAME".json"
 REMOTE_REPORT_PATH="/tmp/"$RESULT_FILE_NAME".html"
 
-echo "Creating instance: $INSTANCE_NAME"
-gcloud compute instances create $INSTANCE_NAME \
-    --image-family ubuntu-1904 \
-    --image-project ubuntu-os-cloud \
-    --machine-type n1-highcpu-8 \
-    --preemptible
+X=$(gcloud compute instances list | { grep -c $INSTANCE_NAME || true; })
+if [ $X == 0 ]; then
+    echo "Creating instance: $INSTANCE_NAME"
+    gcloud compute instances create $INSTANCE_NAME \
+        --image-family ubuntu-1904 \
+        --image-project ubuntu-os-cloud \
+        --machine-type n1-highcpu-8 \
+        --preemptible
+else
+    echo "Found existing instance, reusing it..."
+fi
 
 echo "Copying" $ARTILLERY_YML "to" $REMOTE_YML_PATH
 gcloud compute scp --zone $GCP_ZONE $ARTILLERY_YML $INSTANCE_NAME:$REMOTE_YML_PATH
