@@ -2,6 +2,33 @@
 set -e
 set -u
 
+PARAMS=""
+MACHINE_TYPE="n1-highcpu-8"
+
+while :; do
+    case $1 in
+        -m|--machine-type)
+            MACHINE_TYPE=$2
+            shift 2
+            ;;
+        --)
+            shift
+            break
+            ;;
+        -?*)
+            printf 'ERROR: encountered unknown option: %s, exiting\n' "$1" >&2
+            exit 1
+            ;;
+        *)
+            PARAMS="$PARAMS $1"
+            break
+            ;;
+    esac
+    shift
+done
+
+eval set -- "$PARAMS"
+
 INSTANCE_NAME=load-testing-instance
 GCP_PROJECT=$(gcloud config get-value project)
 GCP_ZONE=$(gcloud config get-value compute/zone)
@@ -21,7 +48,7 @@ if [ $X == 0 ]; then
     gcloud compute instances create $INSTANCE_NAME \
         --image-family ubuntu-1904 \
         --image-project ubuntu-os-cloud \
-        --machine-type n1-highcpu-8 \
+        --machine-type $MACHINE_TYPE \
         --preemptible
 else
     echo "Found existing instance, reusing it..."
