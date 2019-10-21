@@ -43,15 +43,21 @@ REMOTE_RESULT_PATH="/tmp/"$RESULT_FILE_NAME".json"
 REMOTE_REPORT_PATH="/tmp/"$RESULT_FILE_NAME".html"
 
 X=$(gcloud compute instances list | { grep -c $INSTANCE_NAME || true; })
-if [ $X == 0 ]; then
+if [ $X == 1 ]; then
+    RUNNING=$(gcloud compute instances describe $INSTANCE_NAME | { grep -c "status: RUNNING" || true; })
+    if [ $RUNNING == 0 ]; then
+        echo "Instance already created, but not running; script terminating."
+        exit 1
+    else
+        echo "Found existing instance, reusing it..."
+    fi
+elif [ $X == 0 ]; then
     echo "Creating instance: $INSTANCE_NAME"
     gcloud compute instances create $INSTANCE_NAME \
         --image-family ubuntu-1904 \
         --image-project ubuntu-os-cloud \
         --machine-type $MACHINE_TYPE \
         --preemptible
-else
-    echo "Found existing instance, reusing it..."
 fi
 
 echo "Copying" $ARTILLERY_YML "to" $REMOTE_YML_PATH
