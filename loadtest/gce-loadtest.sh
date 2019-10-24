@@ -4,11 +4,16 @@ set -u
 
 PARAMS=""
 MACHINE_TYPE="n1-highcpu-8"
+GCP_PROJECT=$(gcloud config get-value project)
 
 while :; do
     case $1 in
         -m|--machine-type)
             MACHINE_TYPE=$2
+            shift 2
+            ;;
+        -p|--project)
+            GCP_PROJECT=$2
             shift 2
             ;;
         --)
@@ -30,7 +35,6 @@ done
 eval set -- "$PARAMS"
 
 INSTANCE_NAME=load-testing-instance
-GCP_PROJECT=$(gcloud config get-value project)
 GCP_ZONE=$(gcloud config get-value compute/zone)
 ARTILLERY_YML=$1
 DATE=$(date +%s)
@@ -41,6 +45,8 @@ RESULT_PATH=$LOCAL_RESULT_DIR"/"$RESULT_FILE_NAME".json"
 REPORT_PATH=$LOCAL_RESULT_DIR"/"$RESULT_FILE_NAME".html"
 REMOTE_RESULT_PATH="/tmp/"$RESULT_FILE_NAME".json"
 REMOTE_REPORT_PATH="/tmp/"$RESULT_FILE_NAME".html"
+
+echo "Using project: $GCP_PROJECT"
 
 X=$(gcloud compute instances list | { grep -c $INSTANCE_NAME || true; })
 if [ $X == 1 ]; then
@@ -54,6 +60,7 @@ if [ $X == 1 ]; then
 elif [ $X == 0 ]; then
     echo "Creating instance: $INSTANCE_NAME"
     gcloud compute instances create $INSTANCE_NAME \
+        --project $GCP_PROJECT \
         --image-family ubuntu-1904 \
         --image-project ubuntu-os-cloud \
         --machine-type $MACHINE_TYPE \
