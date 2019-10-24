@@ -18,7 +18,6 @@ while :; do
             ;;
         --)
             shift
-            break
             ;;
         -?*)
             printf 'ERROR: encountered unknown option: %s, exiting\n' "$1" >&2
@@ -29,7 +28,6 @@ while :; do
             break
             ;;
     esac
-    shift
 done
 
 eval set -- "$PARAMS"
@@ -48,9 +46,9 @@ REMOTE_REPORT_PATH="/tmp/"$RESULT_FILE_NAME".html"
 
 echo "Using project: $GCP_PROJECT"
 
-X=$(gcloud compute instances list | { grep -c $INSTANCE_NAME || true; })
+X=$(gcloud compute instances list load-testing-instance  --project $GCP_PROJECT | { grep -c $INSTANCE_NAME || true; })
 if [ $X == 1 ]; then
-    RUNNING=$(gcloud compute instances describe $INSTANCE_NAME | { grep -c "status: RUNNING" || true; })
+    RUNNING=$(gcloud compute instances describe --project $GCP_PROJECT $INSTANCE_NAME | { grep -c "status: RUNNING" || true; })
     if [ $RUNNING == 0 ]; then
         echo "Instance already created, but not running; script terminating."
         exit 1
@@ -68,7 +66,7 @@ elif [ $X == 0 ]; then
 fi
 
 echo "Copying" $ARTILLERY_YML "to" $REMOTE_YML_PATH
-gcloud compute scp --zone $GCP_ZONE $ARTILLERY_YML $INSTANCE_NAME:$REMOTE_YML_PATH
+gcloud compute scp --project $GCP_PROJECT --zone $GCP_ZONE $ARTILLERY_YML $INSTANCE_NAME:$REMOTE_YML_PATH
 
 echo "Connecting to instance..."
 gcloud compute ssh --project $GCP_PROJECT --zone $GCP_ZONE $INSTANCE_NAME -- \
@@ -85,9 +83,9 @@ if [ ! -d $LOCAL_RESULT_DIR ]; then
   mkdir $LOCAL_RESULT_DIR
 fi
 
-gcloud compute scp --zone $GCP_ZONE $INSTANCE_NAME:$REMOTE_RESULT_PATH $RESULT_PATH
-gcloud compute scp --zone $GCP_ZONE $INSTANCE_NAME:$REMOTE_REPORT_PATH $REPORT_PATH
+gcloud compute scp --project $GCP_PROJECT --zone $GCP_ZONE $INSTANCE_NAME:$REMOTE_RESULT_PATH $RESULT_PATH
+gcloud compute scp --project $GCP_PROJECT --zone $GCP_ZONE $INSTANCE_NAME:$REMOTE_REPORT_PATH $REPORT_PATH
 
 echo "Deleting instance: $INSTANCE_NAME"
-gcloud compute instances delete --quiet --zone $GCP_ZONE $INSTANCE_NAME
+gcloud compute instances delete --quiet --project $GCP_PROJECT --zone $GCP_ZONE $INSTANCE_NAME
 echo "Instance deleted, have a good day!"
