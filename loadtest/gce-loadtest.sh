@@ -46,8 +46,8 @@ REMOTE_REPORT_PATH="/tmp/"$RESULT_FILE_NAME".html"
 
 echo "Using project: $GCP_PROJECT"
 
-X=$(gcloud compute instances list load-testing-instance  --project $GCP_PROJECT | { grep -c $INSTANCE_NAME || true; })
-if [ $X == 1 ]; then
+EXISTS=$(gcloud compute instances list --project $GCP_PROJECT | { grep -c $INSTANCE_NAME || true; })
+if [ $EXISTS == 1 ]; then
     RUNNING=$(gcloud compute instances describe --project $GCP_PROJECT $INSTANCE_NAME | { grep -c "status: RUNNING" || true; })
     if [ $RUNNING == 0 ]; then
         echo "Instance already created, but not running; script terminating."
@@ -55,7 +55,7 @@ if [ $X == 1 ]; then
     else
         echo "Found existing instance, reusing it..."
     fi
-elif [ $X == 0 ]; then
+else
     echo "Creating instance: $INSTANCE_NAME"
     gcloud compute instances create $INSTANCE_NAME \
         --project $GCP_PROJECT \
