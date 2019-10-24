@@ -5,6 +5,7 @@ set -u
 PARAMS=""
 MACHINE_TYPE="n1-highcpu-8"
 GCP_PROJECT=$(gcloud config get-value project)
+GCP_ZONE=$(gcloud config get-value compute/zone)
 
 while :; do
     case $1 in
@@ -14,6 +15,10 @@ while :; do
             ;;
         -p|--project)
             GCP_PROJECT=$2
+            shift 2
+            ;;
+        -z|--zone)
+            GCP_ZONE=$2
             shift 2
             ;;
         --)
@@ -33,7 +38,6 @@ done
 eval set -- "$PARAMS"
 
 INSTANCE_NAME=load-testing-instance
-GCP_ZONE=$(gcloud config get-value compute/zone)
 ARTILLERY_YML=$1
 DATE=$(date +%s)
 LOCAL_RESULT_DIR="./results"
@@ -45,10 +49,11 @@ REMOTE_RESULT_PATH="/tmp/"$RESULT_FILE_NAME".json"
 REMOTE_REPORT_PATH="/tmp/"$RESULT_FILE_NAME".html"
 
 echo "Using project: $GCP_PROJECT"
+echo "Using zone: $GCP_ZONE"
 
-EXISTS=$(gcloud compute instances list --project $GCP_PROJECT | { grep -c $INSTANCE_NAME || true; })
+EXISTS=$(gcloud compute instances list --project $GCP_PROJECT --zones $GCP_ZONE | { grep -c $INSTANCE_NAME || true; })
 if [ $EXISTS == 1 ]; then
-    RUNNING=$(gcloud compute instances describe --project $GCP_PROJECT $INSTANCE_NAME | { grep -c "status: RUNNING" || true; })
+    RUNNING=$(gcloud compute instances describe --project $GCP_PROJECT --zone $GCP_ZONE $INSTANCE_NAME | { grep -c "status: RUNNING" || true; })
     if [ $RUNNING == 0 ]; then
         echo "Instance already created, but not running; script terminating."
         exit 1
@@ -59,6 +64,7 @@ else
     echo "Creating instance: $INSTANCE_NAME"
     gcloud compute instances create $INSTANCE_NAME \
         --project $GCP_PROJECT \
+        --zone $GCP_ZONE \
         --image-family ubuntu-1904 \
         --image-project ubuntu-os-cloud \
         --machine-type $MACHINE_TYPE \

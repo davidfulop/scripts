@@ -15,5 +15,6 @@ Language is Bash. Tested on Ubuntu 16.04.
 Options:
 - **-m|--machine-type** - sets the machine type the load testing instance will be created from. Accepts values listed in the NAME column of the response from `gcloud compute machine-types list --zones <ZONE>`, where `<ZONE>` is the Availability Zone your local `gcloud compute` is set to. Default is "n1-highcpu-8".
 - **-p|--project** - sets the GCP project id where the load testing instance will be created in. Default is whichever project the local gcloud is set to.
+- **-z|--zone** - sets the compute zone where the load testing instance will be created in. Default is whichever zone the local gcloud is set to.
 
 To quickly test the script, you can use [loadtest-example.yml](./loadtest-example.yml) provided in the repo. There are many examples of artillery scenario definitions over the interwebz.
