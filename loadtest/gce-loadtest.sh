@@ -6,6 +6,7 @@ PARAMS=""
 MACHINE_TYPE="n1-highcpu-8"
 GCP_PROJECT=$(gcloud config get-value project)
 GCP_ZONE=$(gcloud config get-value compute/zone)
+KEEP_INSTANCE=false
 
 while :; do
     case $1 in
@@ -20,6 +21,10 @@ while :; do
         -z|--zone)
             GCP_ZONE=$2
             shift 2
+            ;;
+        -k|--keep-instance)
+            KEEP_INSTANCE=true
+            shift
             ;;
         --)
             shift
@@ -92,6 +97,11 @@ fi
 gcloud compute scp --project $GCP_PROJECT --zone $GCP_ZONE $INSTANCE_NAME:$REMOTE_RESULT_PATH $RESULT_PATH
 gcloud compute scp --project $GCP_PROJECT --zone $GCP_ZONE $INSTANCE_NAME:$REMOTE_REPORT_PATH $REPORT_PATH
 
-echo "Deleting instance: $INSTANCE_NAME"
-gcloud compute instances delete --quiet --project $GCP_PROJECT --zone $GCP_ZONE $INSTANCE_NAME
-echo "Instance deleted, have a good day!"
+if [ $KEEP_INSTANCE = false ]; then
+    echo "Deleting instance: $INSTANCE_NAME"
+    gcloud compute instances delete --quiet --project $GCP_PROJECT --zone $GCP_ZONE $INSTANCE_NAME
+    echo "Instance deleted"
+else
+    echo "--- INSTANCE $INSTANCE_NAME KEPT ALIVE IN $GCP_PROJECT/$GCP_ZONE ---"
+fi
+echo "Script finished, have a good day!"
