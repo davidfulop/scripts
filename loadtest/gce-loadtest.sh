@@ -44,7 +44,7 @@ eval set -- "$PARAMS"
 
 INSTANCE_NAME=load-testing-instance
 ARTILLERY_YML=$1
-DATE=$(date +%s)
+DATE=$(date +"%Y%m%d_%H%M")
 LOCAL_RESULT_DIR="./results"
 REMOTE_YML_PATH="/tmp/$ARTILLERY_YML"
 RESULT_FILE_NAME=$ARTILLERY_YML"_results_"$DATE
