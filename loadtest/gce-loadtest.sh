@@ -2,6 +2,22 @@
 set -e
 set -u
 
+function print_help {
+    echo "Usage:"
+    echo "1. Copy the [script](./gce-loadtest.sh) and the load test description Yaml file into the same directory."
+    echo "2. Run chmod +x gce-loadtest.sh"
+    echo "3. Run ./gce-loadtest.sh [OPTIONS --] <ARTILLERY_YAML>"
+    echo "Options:"
+    echo "-m|--machine-type <VALUE>"
+    echo "    sets the machine type the load testing instance will be created from. Accepts values listed in the NAME column of the response from gcloud compute machine-types list --zones <ZONE>, where <ZONE> is the Availability Zone your local gcloud compute is set to. Default is n1-highcpu-8."
+    echo "-p|--project <VALUE>"
+    echo "    sets the GCP project id where the load testing instance will be created in. Default is whichever project the local gcloud is set to."
+    echo "-z|--zone <VALUE>"
+    echo "sets the compute zone where the load testing instance will be created in. Default is whichever zone the local gcloud is set to."
+    echo "-k|--keep-instance"
+    echo "    doesn't delete the instance after the test finished."
+}
+
 PARAMS=""
 MACHINE_TYPE="n1-highcpu-8"
 GCP_PROJECT=$(gcloud config get-value project)
@@ -10,6 +26,10 @@ KEEP_INSTANCE=false
 
 while :; do
     case $1 in
+        -h|-\?|--help)
+            print_help
+            exit
+            ;;
         -m|--machine-type)
             MACHINE_TYPE=$2
             shift 2
