@@ -90,9 +90,11 @@ REMOTE_REPORT_PATH="/tmp/"$RESULT_FILE_NAME".html"
 echo "Using project: $GCP_PROJECT"
 echo "Using zone: $GCP_ZONE"
 
-EXISTS=$(gcloud compute instances list --project $GCP_PROJECT --zones $GCP_ZONE | { grep -c $INSTANCE_NAME || true; })
+EXISTS=$(gcloud compute instances list --project $GCP_PROJECT \
+    --zones $GCP_ZONE | { grep -c $INSTANCE_NAME || true; })
 if [ $EXISTS == 1 ]; then
-    RUNNING=$(gcloud compute instances describe --project $GCP_PROJECT --zone $GCP_ZONE $INSTANCE_NAME | { grep -c "status: RUNNING" || true; })
+    RUNNING=$(gcloud compute instances describe --project $GCP_PROJECT \
+        --zone $GCP_ZONE $INSTANCE_NAME | { grep -c "status: RUNNING" || true; })
     if [ $RUNNING == 0 ]; then
         echo "Instance already created, but not running; script terminating."
         exit 1
@@ -111,7 +113,8 @@ else
 fi
 
 echo "Copying" $ARTILLERY_YML "to" $REMOTE_YML_PATH
-gcloud compute scp --project $GCP_PROJECT --zone $GCP_ZONE $ARTILLERY_YML $INSTANCE_NAME:$REMOTE_YML_PATH
+gcloud compute scp --project $GCP_PROJECT --zone $GCP_ZONE \
+    $ARTILLERY_YML $INSTANCE_NAME:$REMOTE_YML_PATH
 
 echo "Connecting to instance..."
 gcloud compute ssh --project $GCP_PROJECT --zone $GCP_ZONE $INSTANCE_NAME -- \
@@ -128,12 +131,15 @@ if [ ! -d $LOCAL_RESULT_DIR ]; then
   mkdir $LOCAL_RESULT_DIR
 fi
 
-gcloud compute scp --project $GCP_PROJECT --zone $GCP_ZONE $INSTANCE_NAME:$REMOTE_RESULT_PATH $RESULT_PATH
-gcloud compute scp --project $GCP_PROJECT --zone $GCP_ZONE $INSTANCE_NAME:$REMOTE_REPORT_PATH $REPORT_PATH
+gcloud compute scp --project $GCP_PROJECT --zone $GCP_ZONE \
+    $INSTANCE_NAME:$REMOTE_RESULT_PATH $RESULT_PATH
+gcloud compute scp --project $GCP_PROJECT --zone $GCP_ZONE \
+    $INSTANCE_NAME:$REMOTE_REPORT_PATH $REPORT_PATH
 
 if [ $KEEP_INSTANCE = false ]; then
     echo "Deleting instance: $INSTANCE_NAME"
-    gcloud compute instances delete --quiet --project $GCP_PROJECT --zone $GCP_ZONE $INSTANCE_NAME
+    gcloud compute instances delete --quiet --project $GCP_PROJECT \
+        --zone $GCP_ZONE $INSTANCE_NAME
     echo "Instance deleted"
 else
     echo "--- INSTANCE $INSTANCE_NAME KEPT ALIVE IN $GCP_PROJECT/$GCP_ZONE ---"
