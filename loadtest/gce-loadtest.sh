@@ -39,7 +39,7 @@ MACHINE_TYPE="n1-highcpu-8"
 GCP_PROJECT=$(gcloud config get-value project)
 GCP_ZONE=$(gcloud config get-value compute/zone)
 KEEP_INSTANCE=false
-ENV_VAR=""
+ENV_VARS=""
 
 while :; do
     case $1 in
@@ -64,7 +64,7 @@ while :; do
             shift
             ;;
         -e|--env-var)
-            ENV_VAR=$2
+            ENV_VARS+=" $2"
             shift 2
             ;;
         --)
@@ -125,7 +125,7 @@ gcloud compute scp --project $GCP_PROJECT --zone $GCP_ZONE \
 
 echo "Connecting to instance..."
 gcloud compute ssh --project $GCP_PROJECT --zone $GCP_ZONE $INSTANCE_NAME -- \
-    "echo export $ENV_VAR \
+    "echo export $ENV_VARS \
     && echo 'Installing load testing tools...' \
     && sudo apt update && sudo apt upgrade -y \
     && sudo apt install -y nodejs npm \
