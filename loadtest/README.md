@@ -18,5 +18,6 @@ Options:
 - **-p|--project `<VALUE>`** - sets the GCP project id where the load testing instance will be created in. Default is whichever project the local gcloud is set to.
 - **-z|--zone `<VALUE>`** - sets the compute zone where the load testing instance will be created in. Default is whichever zone the local gcloud is set to.
 - **-k|--keep-instance** - doesn't delete the instance after the test finished.
+- **-e|--env-var `<KEY=VALUE>`** - set environment variable.
 
 To quickly test the script, you can use [loadtest-example.yml](./loadtest-example.yml) provided in the repo. There are many examples of artillery scenario definitions over the interwebz.

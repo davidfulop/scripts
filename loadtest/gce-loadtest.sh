@@ -30,6 +30,8 @@ function print_help {
     echo "    created in. Default is whichever zone the local gcloud is set to."
     echo "-k|--keep-instance"
     echo "    doesn't delete the instance after the test finished."
+    echo "-e|--env-var <KEY=VALUE>"
+    echo "    set environment variable"
 }
 
 PARAMS=""
@@ -37,6 +39,7 @@ MACHINE_TYPE="n1-highcpu-8"
 GCP_PROJECT=$(gcloud config get-value project)
 GCP_ZONE=$(gcloud config get-value compute/zone)
 KEEP_INSTANCE=false
+ENV_VAR=""
 
 while :; do
     case $1 in
@@ -59,6 +62,10 @@ while :; do
         -k|--keep-instance)
             KEEP_INSTANCE=true
             shift
+            ;;
+        -e|--env-var)
+            ENV_VAR=$2
+            shift 2
             ;;
         --)
             shift
@@ -118,7 +125,8 @@ gcloud compute scp --project $GCP_PROJECT --zone $GCP_ZONE \
 
 echo "Connecting to instance..."
 gcloud compute ssh --project $GCP_PROJECT --zone $GCP_ZONE $INSTANCE_NAME -- \
-    "echo 'Installing load testing tools...' \
+    "echo export $ENV_VAR \
+    && echo 'Installing load testing tools...' \
     && sudo apt update && sudo apt upgrade -y \
     && sudo apt install -y nodejs npm \
     && npm install --ignore-scirpts artillery \
